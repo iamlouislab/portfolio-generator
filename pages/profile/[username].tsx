@@ -3,12 +3,16 @@ import { useRouter } from "next/router";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Database } from "../../types/supabase";
 import SectionComponent from "@/components/Section";
+import UserHelloSection from "@/components/UserHelloSection";
 
 function Username() {
   const router = useRouter();
   const { username } = router.query;
   const supabase = useSupabaseClient<Database>();
-  const [loading, setLoading] = useState(true);
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const [portfolio, setPortfolio] = useState<
+    Database["public"]["Tables"]["portfolios"]["Row"]
+  >(null as unknown as Database["public"]["Tables"]["portfolios"]["Row"]);
 
   const [userData, setUserData] = useState<
     Database["public"]["Tables"]["users"]["Row"]
@@ -18,7 +22,7 @@ function Username() {
     Array<Database["public"]["Tables"]["sections"]["Row"]>
   >([]);
 
-  const getUserData = async () => {
+  const loadData = async () => {
     const { data, error } = await supabase
       .from("users")
       .select()
@@ -27,73 +31,67 @@ function Username() {
     if (error) {
       console.log(error);
     } else {
-      setUserData(data);
-      console.log("user data: ", data);
-      console.log("set user data");
-      setLoading(false);
+      setUserData(data as Database["public"]["Tables"]["users"]["Row"]);
+      const portfolioData = await supabase
+        .from("portfolios")
+        .select()
+        .eq("user", data.id)
+        .single();
+      if (portfolioData.error) {
+        console.log(error);
+      } else {
+        setPortfolio(
+          portfolioData.data as Database["public"]["Tables"]["portfolios"]["Row"]
+        );
+        const sectionsData = await supabase
+          .from("sections")
+          .select()
+          .eq("portfolio", portfolioData.data.id);
+        if (error) {
+          console.log(error);
+        } else {
+          setUserSections(
+            sectionsData.data as Array<
+              Database["public"]["Tables"]["sections"]["Row"]
+            >
+          );
+          setLoadingComplete(true);
+        }
+      }
     }
   };
-
-  async function getUserSections(portfolioId: number) {
-    const { data, error } = await supabase
-      .from("sections")
-      .select()
-      .eq("portfolio", portfolioId);
-    if (error) {
-      console.log(error);
-    }
-    setUserSections(
-      data as Array<Database["public"]["Tables"]["sections"]["Row"]>
-    );
-  }
-
-  async function getUserCards(
-    sectionId: number
-  ): Promise<Array<Database["public"]["Tables"]["cards"]["Row"]>> {
-    console.log("getUserCards, sectionId: ", sectionId);
-    const { data, error } = await supabase
-      .from("cards")
-      .select()
-      .eq("section", sectionId);
-    if (error) {
-      console.log(error);
-    }
-    console.log("CardsData: ", data);
-    return data as Array<Database["public"]["Tables"]["cards"]["Row"]>;
-  }
 
   useEffect(() => {
     console.log("router.isReady: ", router.isReady);
     if (router.query.username && router.isReady && !userData) {
-      getUserData();
+      loadData();
     }
-    if (userData) {
-      getUserSections(userData.id);
-    }
-  }, [router.query, router.isReady, loading]);
+  }, [router.query, router.isReady, userData, portfolio]);
 
-  if (username === undefined) {
+  if (username === undefined || !loadingComplete) {
     return <div>Loading...</div>;
   } else {
     return (
-      <div>
-        <h1>Welcome to {userData?.username} 's portfolio</h1>
-        {userSections?.map(
-          (section: Database["public"]["Tables"]["sections"]["Row"], index) => (
-            <div key={index}>
-              <SectionComponent
-                sectionInformation={
-                  section as Database["public"]["Tables"]["sections"]["Row"]
-                }
-                cardsList={
-                  getUserCards(section.id) as unknown as Array<
-                    Database["public"]["Tables"]["cards"]["Row"]
-                  >
-                }
-              />
-            </div>
-          )
-        )}
+      <div style={{ backgroundColor: portfolio.background_color ?? "black" }}>
+        <div className="mx-auto w-5/6">
+          <UserHelloSection userData={userData} portfolioData={portfolio} />
+          {userSections?.map(
+            (
+              section: Database["public"]["Tables"]["sections"]["Row"],
+              index
+            ) => (
+              <div key={index}>
+                <SectionComponent
+                  key={index}
+                  sectionInformation={
+                    section as Database["public"]["Tables"]["sections"]["Row"]
+                  }
+                  portfolioData={portfolio}
+                />
+              </div>
+            )
+          )}
+        </div>
       </div>
     );
   }
