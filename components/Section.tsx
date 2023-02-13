@@ -1,38 +1,74 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Carousel from "./Carousel";
 import { Database } from "../types/supabase";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import Card from "./Card";
 
-function SectionTitle({ title }: { title: string }) {
-  return (
-    <h1 className="text-3xl font-bold mb-5 text-indigo-600 dark:text-indigo-500 mx-5">
-      {title}
-    </h1>
-  );
-}
-
-function SectionComponent({
+const SectionComponent = ({
   sectionInformation,
-  cardsList,
+  portfolioData,
 }: {
   sectionInformation: Database["public"]["Tables"]["sections"]["Row"];
-  cardsList: Array<Database["public"]["Tables"]["cards"]["Row"]>;
-}) {
+  portfolioData: Database["public"]["Tables"]["portfolios"]["Row"];
+}) => {
+  const [cardsList, setCardsList] = useState<
+    Array<Database["public"]["Tables"]["cards"]["Row"]>
+  >([]);
+  const [cardsComponentList, setCardsComponentList] = useState<
+    Array<React.ReactNode>
+  >([]);
+
+  const supabase = useSupabaseClient<Database>();
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    console.log("section.id in useEffect: ", sectionInformation.id);
+    const getCards = async () => {
+      const { data, error } = await supabase
+        .from("cards")
+        .select()
+        .eq("section", sectionInformation.id);
+      if (error) {
+        console.log(error);
+      }
+      console.log("CardsData: ", data);
+      setCardsList(data as Array<Database["public"]["Tables"]["cards"]["Row"]>);
+
+      // build the list of cards components
+      const cardsComponentList = data?.map((card) => {
+        return <Card cardInformation={card} portfolioData={portfolioData} />;
+      });
+      setCardsComponentList(cardsComponentList as Array<React.ReactNode>);
+      setLoading(false);
+    };
+    getCards();
+  }, []);
+
   return (
     <div>
       <div className="py-12">
-        <SectionTitle title={sectionInformation.title ?? ""} />
+        <h1
+          className="mx-5 text-3xl font-bold"
+          style={{ color: portfolioData.text_major_color ?? "black" }}
+        >
+          {sectionInformation.title}
+        </h1>
+        <p
+          className="mx-5"
+          style={{ color: portfolioData.text_minor_color ?? "gray" }}
+        >
+          {sectionInformation.description}
+        </p>
+
         {cardsList.length > 0 ? (
-          <Carousel>{cardsList}</Carousel>
+          <Carousel>{cardsComponentList}</Carousel>
         ) : (
-          <div className="flex justify-center">
-            <p className="text-xl text-gray-500 dark:text-gray-400">
-              No cards found
-            </p>
-          </div>
+          <></>
         )}
       </div>
     </div>
   );
-}
+};
 
 export default SectionComponent;
