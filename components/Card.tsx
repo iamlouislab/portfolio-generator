@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Database } from "../types/supabase";
+import { useEffect } from "react";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 function Card({
   cardInformation,
@@ -20,6 +22,23 @@ function Card({
       ? "gray"
       : portfolioData.card_color_hover;
 
+  const [imageUrl, setImageUrl] = useState("");
+
+  const supabase = useSupabaseClient<Database>();
+
+  useEffect(() => {
+    const getImage = async () => {
+      const { data } = await supabase.storage
+        .from("profile-pictures")
+        .getPublicUrl(
+          `/${cardInformation.user_id}/card-${cardInformation.title}.png`
+        );
+      setImageUrl(data.publicUrl);
+    };
+
+    getImage();
+  }, []);
+
   return (
     <div
       className="mx-5 mt-5 h-[330px] transform overflow-hidden rounded-lg transition hover:-translate-y-2"
@@ -32,7 +51,7 @@ function Card({
     >
       <a href={"/"}>
         <img
-          src={cardInformation.image ?? ""}
+          src={imageUrl ?? ""}
           alt={cardInformation.title ?? ""}
           className="h-36 w-full object-cover md:h-48"
         />
