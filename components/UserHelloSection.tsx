@@ -16,24 +16,37 @@ function UserHelloSection({
   const supabase = useSupabaseClient<Database>();
 
   const [loadding, setLoadding] = useState(true);
+  const [hasImage, setHasImage] = useState(false);
 
   useEffect(() => {
-    if (userData.profile_picture) {
+    try {
       const { data } = supabase.storage
         .from("profile-pictures")
-        .getPublicUrl(userData.profile_picture);
-
+        .getPublicUrl(`/${userData.user_id}/profile_picture`);
       setProfilePicture(data.publicUrl);
+      setHasImage(true);
+      setLoadding(false);
+      console.log(data.publicUrl);
+    } catch (error) {
+      console.log(error);
+      setHasImage(false);
       setLoadding(false);
     }
-  }, [userData.profile_picture]);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 pt-28 md:flex-row md:gap-14">
       {loadding ? (
         <div className="h-48 w-48 animate-pulse rounded-full bg-black"></div>
       ) : (
-        <img src={profilePicture} className="h-48 w-48 rounded-full" />
+        <img
+          src={
+            hasImage
+              ? profilePicture
+              : "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png"
+          }
+          className="h-48 w-48 rounded-full"
+        />
       )}
       <div className="flex flex-col items-center justify-center">
         <div className="text-center">
