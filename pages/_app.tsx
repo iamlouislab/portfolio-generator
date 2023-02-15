@@ -22,7 +22,7 @@ function MyApp({
     >
       <div className="min-h-screen">
         <Navbar />
-        <div className="mt-0">
+        <div className="mt-0 h-screen">
           <Component {...pageProps} />
         </div>
       </div>
