@@ -11,34 +11,31 @@ export interface Database {
     Tables: {
       cards: {
         Row: {
-          author: string | null
           created_at: string | null
           description: string | null
           id: number
-          image: string | null
           keywords: Json | null
-          section: number | null
+          section: number
           title: string | null
+          user_id: string
         }
         Insert: {
-          author?: string | null
           created_at?: string | null
           description?: string | null
           id?: number
-          image?: string | null
           keywords?: Json | null
-          section?: number | null
+          section: number
           title?: string | null
+          user_id: string
         }
         Update: {
-          author?: string | null
           created_at?: string | null
           description?: string | null
           id?: number
-          image?: string | null
           keywords?: Json | null
-          section?: number | null
+          section?: number
           title?: string | null
+          user_id?: string
         }
       }
       portfolios: {
@@ -53,7 +50,7 @@ export interface Database {
           text_major_color: string | null
           text_minor_2_color: string | null
           text_minor_color: string | null
-          user: number | null
+          user_id: string
         }
         Insert: {
           background_color?: string | null
@@ -66,7 +63,7 @@ export interface Database {
           text_major_color?: string | null
           text_minor_2_color?: string | null
           text_minor_color?: string | null
-          user?: number | null
+          user_id: string
         }
         Update: {
           background_color?: string | null
@@ -79,58 +76,61 @@ export interface Database {
           text_major_color?: string | null
           text_minor_2_color?: string | null
           text_minor_color?: string | null
-          user?: number | null
+          user_id?: string
         }
       }
       sections: {
         Row: {
-          author: string | null
           created_at: string | null
           description: string | null
           id: number
-          portfolio: number | null
+          portfolio: number
           title: string | null
+          user_id: string
         }
         Insert: {
-          author?: string | null
           created_at?: string | null
           description?: string | null
           id?: number
-          portfolio?: number | null
+          portfolio: number
           title?: string | null
+          user_id: string
         }
         Update: {
-          author?: string | null
           created_at?: string | null
           description?: string | null
           id?: number
-          portfolio?: number | null
+          portfolio?: number
           title?: string | null
+          user_id?: string
         }
       }
       users: {
         Row: {
           created_at: string | null
           description: string | null
+          displayed_name: string | null
           id: number
           portfolio: number | null
-          profile_picture: string | null
+          user_id: string | null
           username: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          displayed_name?: string | null
           id?: number
           portfolio?: number | null
-          profile_picture?: string | null
+          user_id?: string | null
           username?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          displayed_name?: string | null
           id?: number
           portfolio?: number | null
-          profile_picture?: string | null
+          user_id?: string | null
           username?: string | null
         }
       }
