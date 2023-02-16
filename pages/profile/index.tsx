@@ -36,10 +36,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -58,6 +55,10 @@ function profile() {
 
   const [userSections, setUserSections] = useState<
     Array<Database["public"]["Tables"]["sections"]["Row"]>
+  >([]);
+
+  const [userCards, setUserCards] = useState<
+    Array<Database["public"]["Tables"]["cards"]["Row"]>
   >([]);
 
   const user = useUser();
@@ -107,6 +108,24 @@ function profile() {
                     Database["public"]["Tables"]["sections"]["Row"]
                   >
                 );
+                // get all section ids
+                const sectionIds = sectionsData.data?.map(
+                  (section) => section.id
+                );
+                console.log("sectionIds:", sectionIds);
+                const cardsData = await supabase
+                  .from("cards")
+                  .select()
+                  .in("section", [sectionIds]);
+                if (error) {
+                  console.log(error);
+                }
+                console.log("cards:", cardsData.data);
+                setUserCards(
+                  cardsData.data as Array<
+                    Database["public"]["Tables"]["cards"]["Row"]
+                  >
+                );
               }
             }
           } else {
@@ -140,13 +159,23 @@ function profile() {
       <div className="mx-auto flex w-5/6 flex-col gap-10 pt-8">
         <div className="text-2xl text-white">
           <div className="mb-2 text-2xl text-white">Your sections</div>
-          <SectionRowHeader />
-          {userSections.map((section, index) => (
-            <SectionRow section={section} key={index} />
-          ))}
+          <div className="flex flex-col gap-2">
+            <SectionRowHeader />
+            {userSections.map((section, index) => (
+              <SectionRow section={section} key={index} />
+            ))}
+          </div>
         </div>
 
-        <div className="text-2xl text-white">Your cards</div>
+        <div className="text-2xl text-white">
+          <div className="mb-2 text-2xl text-white">Your cards</div>
+          <div className="flex flex-col gap-2">
+            <CardRowHeader />
+            {userCards.map((card, index) => (
+              <CardRow card={card} key={index} />
+            ))}
+          </div>
+        </div>
         {/* <div>{userCreated ? editProfileButton() : createProfileButton()}</div> */}
       </div>
     </>
@@ -160,6 +189,21 @@ const SectionRowHeader = () => {
         <div className="ml-2">Title</div>
         <div className="ml-2">Description</div>
         <div className="ml-2">Cards</div>
+      </div>
+      <div className="flex flex-row gap-2 rounded bg-gray-200 py-2 text-2xl font-bold text-black">
+        <div className="mr-2">Actions</div>
+      </div>
+    </div>
+  );
+};
+
+const CardRowHeader = () => {
+  return (
+    <div className="flex flex-row items-center justify-between gap-10 rounded bg-gray-200 py-2 text-2xl font-bold text-black">
+      <div className="flex flex-row">
+        <div className="ml-2">Title</div>
+        <div className="ml-2">Description</div>
+        <div className="ml-2">Keywords</div>
       </div>
       <div className="flex flex-row gap-2 rounded bg-gray-200 py-2 text-2xl font-bold text-black">
         <div className="mr-2">Actions</div>
@@ -202,17 +246,41 @@ const SectionRow = ({
       </div>
       <div className="flex flex-row items-center gap-2 rounded bg-slate-100 py-2 text-2xl text-black">
         <button className="mr-2">
-          <Edit />
+          <EditSectionButton section={section} />
         </button>
         <div className="mr-2">
-          <DeleteButton section={section} />
+          <DeleteSectionButton section={section} />
         </div>
       </div>
     </div>
   );
 };
 
-const EditButton = ({
+const CardRow = ({
+  card,
+}: {
+  card: Database["public"]["Tables"]["cards"]["Row"];
+}) => {
+  return (
+    <div className="flex flex-row items-center justify-between gap-10 rounded bg-slate-100 py-2 text-2xl text-black">
+      <div className="flex flex-row items-start">
+        <div className="ml-2">{card.title}</div>
+        <div className="ml-2">{card.description}</div>
+        <div className="ml-2">{card.keywords?.toString()}</div>
+      </div>
+      <div className="flex flex-row items-center gap-2 rounded bg-slate-100 py-2 text-2xl text-black">
+        <button className="mr-2">
+          <EditCardButton card={card} />
+        </button>
+        <div className="mr-2">
+          <DeleteCardButton card={card} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EditSectionButton = ({
   section,
 }: {
   section: Database["public"]["Tables"]["sections"]["Row"];
@@ -255,7 +323,7 @@ const EditButton = ({
         <DialogHeader>
           <DialogTitle>Edit section</DialogTitle>
           <DialogDescription>
-            Update your section's title and description and add cards to it.
+            Update your section's title and description.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -306,7 +374,101 @@ const EditButton = ({
   );
 };
 
-const DeleteButton = ({
+const EditCardButton = ({
+  card,
+}: {
+  card: Database["public"]["Tables"]["cards"]["Row"];
+}) => {
+  const supabase = useSupabaseClient<Database>();
+
+  const [title, setTitle] = useState<string>(card.title as string);
+  const [description, setDescription] = useState<string>(
+    card.description as string
+  );
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const editCard = async ({
+    title,
+    description,
+  }: {
+    title: string;
+    description: string;
+  }) => {
+    console.log("Editing card with id: ", card.id);
+    const { error } = await supabase
+      .from("cards")
+      .update({ title: title, description: description })
+      .eq("id", card.id);
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Edited");
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="bg-black">
+          <Edit />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit card</DialogTitle>
+          <DialogDescription>
+            Update your card's title, description, keywords, image and section.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="title" className="text-right text-white">
+              Username
+            </Label>
+            <Input
+              id="title"
+              value={card.title as string}
+              className="col-span-3"
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="title" className="text-right text-white">
+              Displayed Name
+            </Label>
+            <Input
+              id="title"
+              value={card.description as string}
+              className="col-span-3"
+              onChange={(e) => {
+                setDescription(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <div className="flex items-center justify-center gap-5">
+            {loading ? (
+              <ButtonLoading text="Creating profile..." />
+            ) : (
+              // <Button type="submit" onClick={() => editSection()}>
+              <Button
+                type="submit"
+                onClick={() => console.log("title: ", title)}
+              >
+                Update section
+              </Button>
+            )}
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const DeleteSectionButton = ({
   section,
 }: {
   section: Database["public"]["Tables"]["sections"]["Row"];
@@ -342,6 +504,47 @@ const DeleteButton = ({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={() => deleteSection()}>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+const DeleteCardButton = ({
+  card,
+}: {
+  card: Database["public"]["Tables"]["cards"]["Row"];
+}) => {
+  const supabase = useSupabaseClient<Database>();
+
+  const deleteCard = async () => {
+    console.log("Deleting card with id: ", card.id);
+    const { error } = await supabase.from("cards").delete().eq("id", card.id);
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Deleted");
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger>
+        <Trash />
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete this
+            section from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => deleteCard()}>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>
