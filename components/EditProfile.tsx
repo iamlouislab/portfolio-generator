@@ -17,13 +17,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import ButtonLoading from "./ButtonLoading";
 
-function editProfileButton(): React.ReactNode {
+function EditProfileButton({
+  userData,
+}: {
+  userData: Database["public"]["Tables"]["users"]["Row"];
+}) {
   const supabase = useSupabaseClient<Database>();
   const [userCreated, setUserCreated] = useState(false);
 
-  const [username, setUsername] = useState<string>("");
-  const [displayedName, setDisplayedName] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
+  const [username, setUsername] = useState<string>(userData.username ?? "");
+  const [displayedName, setDisplayedName] = useState<string>(
+    userData.displayed_name ?? ""
+  );
+  const [description, setDescription] = useState<string>(
+    userData.description ?? ""
+  );
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -138,7 +146,7 @@ function editProfileButton(): React.ReactNode {
             </Label>
             <Input
               id="username"
-              placeholder="Username"
+              value={username}
               className="col-span-3"
               onChange={(e) => {
                 setUsername(e.target.value);
@@ -151,7 +159,7 @@ function editProfileButton(): React.ReactNode {
             </Label>
             <Input
               id="displayed_name"
-              placeholder="John Doe"
+              value={displayedName}
               className="col-span-3"
               onChange={(e) => {
                 setDisplayedName(e.target.value);
@@ -164,7 +172,7 @@ function editProfileButton(): React.ReactNode {
             </Label>
             <Input
               id="description"
-              placeholder="I'm a software engineer."
+              value={description}
               className="col-span-3"
               onChange={(e) => {
                 setDescription(e.target.value);
@@ -214,4 +222,4 @@ function editProfileButton(): React.ReactNode {
   );
 }
 
-export default editProfileButton;
+export default EditProfileButton;

@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-function createProfileButton(): React.ReactNode {
+function CreateProfileButton() {
   const supabase = useSupabaseClient<Database>();
   const [userCreated, setUserCreated] = useState(false);
 
@@ -180,4 +180,4 @@ function createProfileButton(): React.ReactNode {
   );
 }
 
-export default createProfileButton;
+export default CreateProfileButton;
