@@ -5,6 +5,7 @@ import { Database } from "../../types/supabase";
 import SectionComponent from "@/components/Section";
 import UserHelloSection from "@/components/UserHelloSection";
 import { Loading } from "@/components/Loading";
+import { baseColors } from "../../lib/utils"
 
 function Username() {
   const router = useRouter();
@@ -92,7 +93,7 @@ function Username() {
       } else {
         return (
           <div
-            style={{ backgroundColor: portfolio.background_color ?? "white" }}
+            style={{ backgroundColor: portfolio.background_color ?? baseColors.background_color }}
             className="min-h-screen"
           >
             <div className="mx-auto w-5/6">
