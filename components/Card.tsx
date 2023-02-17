@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Database } from "../types/supabase";
 import { useEffect } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { baseColors } from "@/lib/utils";
 
 function Card({
   cardInformation,
@@ -43,7 +44,7 @@ function Card({
     <div
       className="mx-5 mt-5 h-[330px] transform overflow-hidden rounded-lg transition hover:-translate-y-2"
       style={{
-        color: portfolioData.background_color ?? "white",
+        color: portfolioData.background_color ?? baseColors.background_color,
         backgroundColor: color ?? color,
       }}
       onMouseEnter={() => setColor(hoveredColor)}
@@ -58,7 +59,10 @@ function Card({
         <div className="w-full p-5">
           <h3
             className="mb-2 text-lg font-semibold md:mb-3 md:text-xl"
-            style={{ color: portfolioData.text_minor_color ?? "white" }}
+            style={{
+              color:
+                portfolioData.text_minor_color ?? baseColors.text_minor_color,
+            }}
           >
             {cardInformation.title}
           </h3>
@@ -73,8 +77,12 @@ function Card({
                   key={index}
                   className="inline-block rounded-md px-2 py-1"
                   style={{
-                    backgroundColor: portfolioData.background_color ?? "white",
-                    color: portfolioData.text_major_color ?? "black",
+                    backgroundColor:
+                      portfolioData.background_color ??
+                      baseColors.background_color,
+                    color:
+                      portfolioData.text_major_color ??
+                      baseColors.text_major_color,
                   }}
                 >
                   {keyword as string}
