@@ -3,6 +3,7 @@ import Carousel from "./Carousel";
 import { Database } from "../types/supabase";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import Card from "./Card";
+import { baseColors } from "@/lib/utils";
 
 const SectionComponent = ({
   sectionInformation,
@@ -50,13 +51,13 @@ const SectionComponent = ({
       <div className="py-12">
         <h1
           className="mx-5 text-3xl font-bold"
-          style={{ color: portfolioData.text_major_color ?? "black" }}
+          style={{ color: portfolioData.text_major_color ?? baseColors.text_major_color }}
         >
           {sectionInformation.title}
         </h1>
         <p
           className="mx-5"
-          style={{ color: portfolioData.text_minor_color ?? "gray" }}
+          style={{ color: portfolioData.text_minor_color ?? baseColors.text_minor_color }}
         >
           {sectionInformation.description}
         </p>
