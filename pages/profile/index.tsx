@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { Database } from "../../types/supabase";
 import { useRouter } from "next/router";
-import editProfileButton from "@/components/EditProfile";
-import createProfileButton from "@/components/CreateProfile";
+import EditProfileButton from "@/components/EditProfile";
+import CreateProfileButton from "@/components/CreateProfile";
 import { Plus, Trash } from "lucide-react";
 import { Edit } from "lucide-react";
+import { SketchPicker } from "react-color";
+import reactCSS from "reactcss";
 
 import {
   AlertDialog,
@@ -40,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { baseColors } from "@/lib/utils";
 
 function profile() {
   const supabase = useSupabaseClient<Database>();
@@ -140,6 +143,26 @@ function profile() {
     }
   }, [user]);
 
+  if (!userCreated) {
+    return (
+      <>
+        <div className="mx-auto flex w-5/6 flex-col gap-2 pt-8">
+          <div className="text-6xl text-white">Hi!</div>
+          <div className="text-2xl text-white">
+            Welcome to your profile, here you can edit your portfolio.
+          </div>
+          <div className="flex w-1/2 flex-row justify-start gap-2">
+            {userCreated ? (
+              <EditProfileButton userData={userData} />
+            ) : (
+              <CreateProfileButton />
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="mx-auto flex w-5/6 flex-col gap-2 pt-8">
@@ -154,6 +177,12 @@ function profile() {
             user_id={user?.id ?? ""}
             portfolio_id={portfolio?.id ?? ""}
           />
+          {userCreated ? (
+            <EditProfileButton userData={userData} />
+          ) : (
+            <CreateProfileButton />
+          )}
+          <EditColorButton portfolioData={portfolio} />
         </div>
       </div>
       <div className="mx-auto flex w-5/6 flex-col gap-10 pt-8">
@@ -176,7 +205,6 @@ function profile() {
             ))}
           </div>
         </div>
-        {/* <div>{userCreated ? editProfileButton() : createProfileButton()}</div> */}
       </div>
     </>
   );
@@ -291,7 +319,10 @@ const EditSectionButton = ({
   const [description, setDescription] = useState<string>(
     section.description as string
   );
+
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const editSection = async ({
     title,
@@ -300,6 +331,7 @@ const EditSectionButton = ({
     title: string;
     description: string;
   }) => {
+    setLoading(true);
     console.log("Editing section with id: ", section.id);
     const { error } = await supabase
       .from("sections")
@@ -307,17 +339,18 @@ const EditSectionButton = ({
       .eq("id", section.id);
     if (error) {
       console.log(error);
+      setError(error.message);
     } else {
       console.log("Edited");
+      setSuccess(true);
     }
+    setLoading(false);
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-black">
-          <Edit />
-        </Button>
+        <Edit />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -329,11 +362,11 @@ const EditSectionButton = ({
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right text-white">
-              Username
+              Title
             </Label>
             <Input
               id="title"
-              value={section.title as string}
+              value={title}
               className="col-span-3"
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -342,11 +375,11 @@ const EditSectionButton = ({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right text-white">
-              Displayed Name
+              Description
             </Label>
             <Input
-              id="title"
-              value={section.description as string}
+              id="description"
+              value={description}
               className="col-span-3"
               onChange={(e) => {
                 setDescription(e.target.value);
@@ -356,13 +389,23 @@ const EditSectionButton = ({
         </div>
         <DialogFooter>
           <div className="flex items-center justify-center gap-5">
+            {error && <div className="text-sm text-red-500">{error}</div>}
+            {success && (
+              <div className="text-sm text-green-500">
+                Section edited successfully
+              </div>
+            )}
             {loading ? (
-              <ButtonLoading text="Creating profile..." />
+              <ButtonLoading text="Editing section..." />
             ) : (
-              // <Button type="submit" onClick={() => editSection()}>
               <Button
                 type="submit"
-                onClick={() => console.log("title: ", title)}
+                onClick={() =>
+                  editSection({
+                    title,
+                    description,
+                  })
+                }
               >
                 Update section
               </Button>
@@ -385,33 +428,70 @@ const EditCardButton = ({
   const [description, setDescription] = useState<string>(
     card.description as string
   );
+  const [keywords, setKeywords] = useState<string[]>(card.keywords as string[]);
+  const [section, setSection] = useState<string>(
+    card.section as unknown as string
+  );
+
+  const [sections, setSections] = useState<
+    Database["public"]["Tables"]["sections"]["Row"][]
+  >([]);
+
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const [selectedSectionId, setSelectedSectionId] = useState<number>(0);
 
   const editCard = async ({
     title,
     description,
+    keywords,
   }: {
     title: string;
     description: string;
+    keywords: string[];
   }) => {
     console.log("Editing card with id: ", card.id);
-    const { error } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from("cards")
-      .update({ title: title, description: description })
-      .eq("id", card.id);
+      .update({
+        title: title,
+        description: description,
+        keywords: keywords,
+        section: selectedSectionId,
+      })
+      .eq("id", card.id)
+      .select();
     if (error) {
       console.log(error);
+      setError(error.message);
     } else {
-      console.log("Edited");
+      setSuccess("Card edited successfully");
     }
+    setLoading(false);
   };
+
+  useEffect(() => {
+    const getSections = async () => {
+      const { data, error } = await supabase
+        .from("sections")
+        .select()
+        .order("id", { ascending: true });
+      if (error) {
+        console.log(error);
+      } else {
+        setSections(data as Database["public"]["Tables"]["sections"]["Row"][]);
+      }
+    };
+    getSections();
+  }, []);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="bg-black">
-          <Edit />
-        </Button>
+        <Edit />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -423,11 +503,11 @@ const EditCardButton = ({
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right text-white">
-              Username
+              Title
             </Label>
             <Input
               id="title"
-              value={card.title as string}
+              value={title}
               className="col-span-3"
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -435,30 +515,71 @@ const EditCardButton = ({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right text-white">
-              Displayed Name
+            <Label htmlFor="description" className="text-right text-white">
+              Description
             </Label>
             <Input
               id="title"
-              value={card.description as string}
+              value={description}
               className="col-span-3"
               onChange={(e) => {
                 setDescription(e.target.value);
               }}
             />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="keywords" className="text-right text-white">
+              Keywords (separated by commas)
+            </Label>
+            <Input
+              id="keywords"
+              value={keywords.join(",")}
+              className="col-span-3"
+              onChange={(e) => {
+                setKeywords(e.target.value.split(","));
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="section" className="text-right text-white">
+              Section (choose from existing ones)
+            </Label>
+            <Select
+              onValueChange={(value) => setSelectedSectionId(parseInt(value))}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Section" />
+              </SelectTrigger>
+              <SelectContent>
+                {sections.map((section) => (
+                  <div key={section.id}>
+                    <SelectItem value={section.id as unknown as string}>
+                      {section.title}
+                    </SelectItem>
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <div className="flex items-center justify-center gap-5">
+            {error && <div className="text-sm text-red-500">{error}</div>}
+            {success && <div className="text-sm text-green-500">{success}</div>}
             {loading ? (
-              <ButtonLoading text="Creating profile..." />
+              <ButtonLoading text="Editing card..." />
             ) : (
-              // <Button type="submit" onClick={() => editSection()}>
               <Button
                 type="submit"
-                onClick={() => console.log("title: ", title)}
+                onClick={() =>
+                  editCard({
+                    title,
+                    description,
+                    keywords,
+                  })
+                }
               >
-                Update section
+                Update card
               </Button>
             )}
           </div>
@@ -836,6 +957,216 @@ const CreateSectionButton = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const EditColorButton = ({
+  portfolioData,
+}: {
+  portfolioData: Database["public"]["Tables"]["portfolios"]["Row"];
+}) => {
+  console.log("portfolio Edit color button", portfolioData);
+  const [background_color, setBackgroundColor] = useState<string>(
+    portfolioData?.background_color || baseColors.background_color
+  );
+  const [text_major_color, setTextMajorColor] = useState<string>(
+    portfolioData?.text_major_color || baseColors.text_major_color
+  );
+  const [text_color_minor, setTextColorMinor] = useState<string>(
+    portfolioData?.text_minor_color || baseColors.text_minor_color
+  );
+  const [text_minor_2_color, setTextColorMinor2] = useState<string>(
+    portfolioData?.text_minor_2_color || baseColors.text_minor_2_color
+  );
+
+  const supabase = useSupabaseClient<Database>();
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const updateColors = async ({
+    background_color,
+    text_major_color,
+    text_color_minor,
+    text_minor_2_color,
+  }: {
+    background_color: string;
+    text_major_color: string;
+    text_color_minor: string;
+    text_minor_2_color: string;
+  }) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("portfolios")
+      .update({
+        background_color: background_color,
+        text_major_color: text_major_color,
+        text_minor_color: text_color_minor,
+        text_minor_2_color: text_minor_2_color,
+      })
+      .eq("id", portfolioData.id);
+    if (error) {
+      console.log(error);
+      setError("Error updating colors: " + error.message);
+    } else {
+      console.log("Updated");
+      setSuccess(true);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="bg-black">
+          Edit colors
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit colors</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="background_color" className="text-right text-white">
+              Background color
+            </Label>
+            <div className="flex flex-row">
+              <div
+                className="col-span-3 h-10 w-10 rounded"
+                style={{
+                  backgroundColor: background_color,
+                }}
+              ></div>
+              <ColorPicker
+                initialColor={background_color}
+                onChange={(color) => setBackgroundColor(color)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="text_color" className="text-right text-white">
+              Text major color
+            </Label>
+            <div className="flex flex-row">
+              <div
+                className="col-span-3 h-10 w-10 rounded"
+                style={{
+                  backgroundColor: text_major_color,
+                }}
+              ></div>
+              <ColorPicker
+                initialColor={text_major_color}
+                onChange={(color) => setTextMajorColor(color)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="text_color_minor" className="text-right text-white">
+              Text color minor
+            </Label>
+            <div className="flex flex-row">
+              <div
+                className="col-span-3 h-10 w-10 rounded"
+                style={{
+                  backgroundColor: text_color_minor,
+                }}
+              ></div>
+              <ColorPicker
+                initialColor={text_color_minor}
+                onChange={(color) => setTextColorMinor(color)}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label
+              htmlFor="text_color_minor_2"
+              className="text-right text-white"
+            >
+              Text color minor 2
+            </Label>
+            <div className="flex flex-row">
+              <div
+                className="col-span-3 h-10 w-10 rounded"
+                style={{
+                  backgroundColor: text_minor_2_color,
+                }}
+              ></div>
+              <ColorPicker
+                initialColor={text_minor_2_color}
+                onChange={(color) => setTextColorMinor2(color)}
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <div className="flex items-center justify-center gap-5">
+            {error && <p className="text-red-500">{error}</p>}
+            {success && <p className="text-green-500">Success!</p>}
+            {loading ? (
+              <ButtonLoading text="Updating colors..." />
+            ) : (
+              <Button
+                type="submit"
+                onClick={() =>
+                  updateColors({
+                    background_color,
+                    text_major_color,
+                    text_color_minor,
+                    text_minor_2_color,
+                  })
+                }
+              >
+                Update colors
+              </Button>
+            )}
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ColorPicker = ({
+  initialColor,
+  onChange,
+}: {
+  initialColor: string;
+  onChange: (color: string) => void;
+}) => {
+  const [color, setColor] = useState(initialColor);
+  const [displayColorPicker, setDisplayColorPicker] = useState(false);
+
+  const handleClick = () => {
+    setDisplayColorPicker(!displayColorPicker);
+  };
+
+  const handleClose = () => {
+    setDisplayColorPicker(false);
+  };
+
+  const handleChange = (color: any) => {
+    setColor(color.hex);
+    onChange(color.hex);
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div
+        className="h-8 w-12 rounded border border-white"
+        style={{ backgroundColor: color }}
+      ></div>
+      <Button variant="outline" onClick={handleClick}>
+        Choose color
+      </Button>
+      {displayColorPicker ? (
+        <div className="absolute z-10">
+          <div className="fixed inset-0" onClick={handleClose}></div>
+          <SketchPicker color={color as any} onChange={handleChange} />
+        </div>
+      ) : null}
+    </div>
   );
 };
 
