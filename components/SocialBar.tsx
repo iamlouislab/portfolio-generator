@@ -1,6 +1,7 @@
 import React from "react";
 import { LinkedinIcon, GithubIcon } from "lucide-react";
 import { Database } from "@/types/supabase";
+import { baseColors } from "@/lib/utils";
 
 const getIcon = (name: string, color: string) => {
   switch (name) {
@@ -29,9 +30,12 @@ function SocialBar({
           target="_blank"
           rel="noreferrer"
           className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ backgroundColor: portfolioData.text_major_color ?? "black" }}
+          style={{
+            backgroundColor:
+              portfolioData.text_major_color ?? baseColors.text_major_color,
+          }}
         >
-          {getIcon(social, portfolioData.text_minor_color ?? "white")}
+          {getIcon(social, portfolioData.text_minor_color ?? baseColors.text_minor_color)}
         </a>
       ))}
     </div>
