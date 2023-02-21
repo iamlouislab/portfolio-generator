@@ -1,27 +1,49 @@
-# Next.js + Tailwind CSS Example
+# Portfolio Creator
 
-This example shows how to use [Tailwind CSS](https://tailwindcss.com/) [(v3.2)](https://tailwindcss.com/blog/tailwindcss-v3-2) with Next.js. It follows the steps outlined in the official [Tailwind docs](https://tailwindcss.com/docs/guides/nextjs).
+Portfolio Creator is an open source project that aims to allow users to easily create an online portfolio. Users can create sections with a title and a description, and add cards with different projects where they can add images, links, keywords, title, and description. This project was created for educational purposes, and pull requests are welcome.
 
-## Deploy your own
+## Demo
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-tailwindcss)
+A live version can be seen at https://portfolio-generator-gamma.vercel.app/
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-tailwindcss&project-name=with-tailwindcss&repository-name=with-tailwindcss)
+## Disclaimer
 
-## How to use
+As this project was educationnal some of the code may not be optimized and especially when it comes to fetching data from supabase. Using a state management libray is on my roadmap for this project.
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
+## Tech Stack
+
+The project uses the following technologies:
+
+Next.js: a popular React framework for building server-side-rendered (SSR) applications.
+Typescript: a statically-typed superset of JavaScript that provides improved developer experience and fewer runtime errors.
+Tailwind: a CSS utility-first framework that provides a set of pre-defined classes to make styling more efficient.
+Supabase: an open-source Firebase alternative that provides a suite of tools for building and scaling web applications.
+Getting Started
+To get started with the project, you need to clone the repository to your local machine:
 
 ```bash
-npx create-next-app --example with-tailwindcss with-tailwindcss-app
+git clone https://github.com/username/portfolio-creator.git
 ```
 
-```bash
-yarn create next-app --example with-tailwindcss with-tailwindcss-app
+Then, navigate to the project directory and install the dependencies:
+
+```
+cd portfolio-creator
+npm install
 ```
 
-```bash
-pnpm create next-app --example with-tailwindcss with-tailwindcss-app
+Finally, start the development server:
+
+```
+npm run dev
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+The development server should be accessible at http://localhost:3000.
+
+## Contributing
+
+This project is open for contributions, and pull requests are welcome. To contribute to the project, you can fork the repository and create a new branch for your changes. Once you have made your changes, create a pull request describing the changes you made and why they are important.
+
+```
+
+```
