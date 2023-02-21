@@ -34,6 +34,18 @@ function EditProfileButton({
   );
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
+  const [githubLink, setGithubLink] = useState<string>(
+    userData.github_link ?? ""
+  );
+
+  const [twitterLink, setTwitterLink] = useState<string>(
+    userData.twitter_link ?? ""
+  );
+
+  const [linkedinLink, setLinkedinLink] = useState<string>(
+    userData.linkedin_link ?? ""
+  );
+
   const [loading, setLoading] = useState(false);
   const [dbLoading, setDbLoading] = useState(false);
   const [error, setError] = useState(null as string | null);
@@ -48,11 +60,17 @@ function EditProfileButton({
     displayedName,
     description,
     profilePicture,
+    githubLink,
+    twitterLink,
+    linkedinLink,
   }: {
     username: string;
     displayedName: string;
     description: string;
     profilePicture: File | null;
+    githubLink: string;
+    twitterLink: string;
+    linkedinLink: string;
   }) => {
     if (!user) return;
     setDbLoading(true);
@@ -96,6 +114,9 @@ function EditProfileButton({
             username: username,
             displayed_name: displayedName,
             description: description,
+            github_link: githubLink,
+            twitter_link: twitterLink,
+            linkedin_link: linkedinLink,
           })
           .eq("user_id", user.id);
         if (error) {
@@ -110,7 +131,9 @@ function EditProfileButton({
             username: username,
             displayed_name: displayedName,
             description: description,
-            profile_picture: profilePicture,
+            github_link: githubLink,
+            twitter_link: twitterLink,
+            linkedin_link: linkedinLink,
           },
         ]);
         if (error) {
@@ -180,6 +203,45 @@ function EditProfileButton({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="github" className="text-right text-white">
+              Github Profile Link
+            </Label>
+            <Input
+              id="github"
+              value={githubLink}
+              className="col-span-3"
+              onChange={(e) => {
+                setGithubLink(e.target.value);
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="twitter" className="text-right text-white">
+              Twitter Profile Link
+            </Label>
+            <Input
+              id="twitter"
+              value={twitterLink}
+              className="col-span-3"
+              onChange={(e) => {
+                setTwitterLink(e.target.value);
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="linkedin" className="text-right text-white">
+              Linkedin Profile Link
+            </Label>
+            <Input
+              id="linkedin"
+              value={linkedinLink}
+              className="col-span-3"
+              onChange={(e) => {
+                setLinkedinLink(e.target.value);
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="Profile Picture" className="text-right text-white">
               Profile Picture
             </Label>
@@ -209,6 +271,9 @@ function EditProfileButton({
                     displayedName,
                     description,
                     profilePicture,
+                    githubLink,
+                    twitterLink,
+                    linkedinLink,
                   })
                 }
               >

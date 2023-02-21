@@ -53,21 +53,25 @@ function UserHelloSection({
         <div className="text-center">
           <h1
             className="mb-1 text-lg font-semibold md:mb-3 md:text-4xl"
-            style={{ color: portfolioData.text_major_color ?? baseColors.text_major_color }}
+            style={{
+              color:
+                portfolioData.text_major_color ?? baseColors.text_major_color,
+            }}
           >
             Hello, I'm {userData.username}
           </h1>
           <p
             className="text-md mb-3 max-w-md md:text-xl"
-            style={{ color: portfolioData.text_minor_2_color ?? baseColors.text_minor_2_color }}
+            style={{
+              color:
+                portfolioData.text_minor_2_color ??
+                baseColors.text_minor_2_color,
+            }}
           >
             {userData.description}
           </p>
           <div className="pt-3">
-            <SocialBar
-              socialsList={["github", "linkedin"]}
-              portfolioData={portfolioData}
-            />
+            <SocialBar userData={userData} portfolioData={portfolioData} />
           </div>
         </div>
       </div>
