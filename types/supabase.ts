@@ -15,6 +15,7 @@ export interface Database {
           description: string | null
           id: number
           keywords: Json | null
+          link: string | null
           section: number
           title: string | null
           user_id: string
@@ -24,6 +25,7 @@ export interface Database {
           description?: string | null
           id?: number
           keywords?: Json | null
+          link?: string | null
           section: number
           title?: string | null
           user_id: string
@@ -33,6 +35,7 @@ export interface Database {
           description?: string | null
           id?: number
           keywords?: Json | null
+          link?: string | null
           section?: number
           title?: string | null
           user_id?: string
@@ -110,8 +113,11 @@ export interface Database {
           created_at: string | null
           description: string | null
           displayed_name: string | null
+          github_link: string | null
           id: number
+          linkedin_link: string | null
           portfolio: number | null
+          twitter_link: string | null
           user_id: string | null
           username: string | null
         }
@@ -119,8 +125,11 @@ export interface Database {
           created_at?: string | null
           description?: string | null
           displayed_name?: string | null
+          github_link?: string | null
           id?: number
+          linkedin_link?: string | null
           portfolio?: number | null
+          twitter_link?: string | null
           user_id?: string | null
           username?: string | null
         }
@@ -128,8 +137,11 @@ export interface Database {
           created_at?: string | null
           description?: string | null
           displayed_name?: string | null
+          github_link?: string | null
           id?: number
+          linkedin_link?: string | null
           portfolio?: number | null
+          twitter_link?: string | null
           user_id?: string | null
           username?: string | null
         }
