@@ -429,9 +429,7 @@ const EditCardButton = ({
     card.description as string
   );
   const [keywords, setKeywords] = useState<string[]>(card.keywords as string[]);
-  const [section, setSection] = useState<string>(
-    card.section as unknown as string
-  );
+  const [link, setLink] = useState<string>(card.link as string);
 
   const [sections, setSections] = useState<
     Database["public"]["Tables"]["sections"]["Row"][]
@@ -447,10 +445,12 @@ const EditCardButton = ({
     title,
     description,
     keywords,
+    link,
   }: {
     title: string;
     description: string;
     keywords: string[];
+    link: string;
   }) => {
     console.log("Editing card with id: ", card.id);
     setLoading(true);
@@ -497,7 +497,8 @@ const EditCardButton = ({
         <DialogHeader>
           <DialogTitle>Edit card</DialogTitle>
           <DialogDescription>
-            Update your card's title, description, keywords, image and section.
+            Update your card's title, description, keywords, link, image and
+            section.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -541,6 +542,19 @@ const EditCardButton = ({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="keywords" className="text-right text-white">
+              Link (when the card is clicked)
+            </Label>
+            <Input
+              id="link"
+              value={link}
+              className="col-span-3"
+              onChange={(e) => {
+                setLink(e.target.value);
+              }}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="section" className="text-right text-white">
               Section (choose from existing ones)
             </Label>
@@ -576,6 +590,7 @@ const EditCardButton = ({
                     title,
                     description,
                     keywords,
+                    link,
                   })
                 }
               >

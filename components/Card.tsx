@@ -50,7 +50,7 @@ function Card({
       onMouseEnter={() => setColor(hoveredColor)}
       onMouseLeave={() => setColor(initialColor)}
     >
-      <a href={"/"}>
+      <a href={cardInformation.link ?? "/"}>
         <img
           src={imageUrl ?? ""}
           alt={cardInformation.title ?? ""}
