@@ -66,7 +66,14 @@ function Card({
           >
             {cardInformation.title}
           </h3>
-          <p className="mb-2 text-sm md:mb-3 md:text-base">
+          <p
+            className="mb-2 text-sm md:mb-3 md:text-base"
+            style={{
+              color:
+                portfolioData.text_minor_2_color ??
+                baseColors.text_minor_2_color,
+            }}
+          >
             {cardInformation.description}
           </p>
           <div className="flex flex-row flex-wrap items-center justify-start gap-2 text-xs md:text-sm">
@@ -77,12 +84,8 @@ function Card({
                   key={index}
                   className="inline-block rounded-md px-2 py-1"
                   style={{
-                    backgroundColor:
-                      portfolioData.background_color ??
-                      baseColors.background_color,
-                    color:
-                      portfolioData.text_major_color ??
-                      baseColors.text_major_color,
+                    color: portfolioData.background_color ?? baseColors.background_color,
+                    backgroundColor: portfolioData.text_major_color ?? baseColors.text_major_color,
                   }}
                 >
                   {keyword as string}

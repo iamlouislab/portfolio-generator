@@ -37,7 +37,7 @@ function SocialBar({
       >
         {getIcon(
           "github",
-          portfolioData.text_minor_color ?? baseColors.text_minor_color
+          portfolioData.background_color ?? baseColors.background_color
         )}
       </a>
       <a
@@ -52,7 +52,7 @@ function SocialBar({
       >
         {getIcon(
           "linkedin",
-          portfolioData.text_minor_color ?? baseColors.text_minor_color
+          portfolioData.background_color ?? baseColors.background_color
         )}
       </a>
       <a
@@ -67,7 +67,7 @@ function SocialBar({
       >
         {getIcon(
           "twitter",
-          portfolioData.text_minor_color ?? baseColors.text_minor_color
+          portfolioData.background_color ?? baseColors.background_color
         )}
       </a>
     </div>
